@@ -1,0 +1,18 @@
+{
+	"extension": {
+		"version": "0.6.1",
+		"json": 2
+	},
+	"project": {
+		"name": "Robotics_Group19",
+		"description": "",
+		"creationDate": "3/17/2025, 4:44:36 PM",
+		"platform": "EXP",
+		"language": "python",
+		"slot": 1,
+		"sdkVersion": "EXP_1_0_0_21",
+		"python": {
+			"main": "src/main.py"
+		}
+	}
+}
