@@ -6,7 +6,6 @@
 # 	Description:  EXP project                                                  #
 #                                                                              #
 # ---------------------------------------------------------------------------- #
-
 # Library imports
 from vex import *
 import time
@@ -22,16 +21,11 @@ class Bot:
         self.motorFrontRight = Motor(Ports.PORT10)
         self.motorBackRight = Motor(Ports.PORT9)
     
-        self.baseSpeed = 50  # RPM
-        self.turnSpeed = 10  # RPM
+        self.baseSpeed = 30
+        self.turnSpeed = 10
 
         self.inertial.calibrate()
         self.optical.set_light(100)
-
-        x , y = 100, 100
-        self.trackArr=[['-'for i in range(x)]for j in range(y)]#initalise array for tracking
-        self.coordX=1
-        self.coordY=1
 
     def moveForward(self):
         self.motorFrontLeft.spin(FORWARD, self.baseSpeed)
@@ -40,10 +34,10 @@ class Bot:
         self.motorBackRight.spin(REVERSE, self.baseSpeed)
 
     def moveBackward(self):
-        self.motorFrontLeft.spin(REVERSE, self.baseSpeed)
-        self.motorBackLeft.spin(REVERSE, self.baseSpeed)
-        self.motorFrontRight.spin(FORWARD, self.baseSpeed)
-        self.motorBackRight.spin(FORWARD, self.baseSpeed)
+        self.motorFrontLeft.spin(REVERSE)
+        self.motorBackLeft.spin(REVERSE)
+        self.motorFrontRight.spin(FORWARD)
+        self.motorBackRight.spin(FORWARD)
 
     def stop(self):
         self.motorFrontLeft.stop()
@@ -57,7 +51,7 @@ class Bot:
         self.motorFrontRight.spin(REVERSE, self.turnSpeed)
         self.motorBackRight.spin(REVERSE, self.turnSpeed)
 
-        time.sleep(4.75)
+        time.sleep(4.50)
 
         self.stop()
             
@@ -67,99 +61,171 @@ class Bot:
         self.motorFrontRight.spin(FORWARD, self.turnSpeed)
         self.motorBackRight.spin(FORWARD, self.turnSpeed)
 
-        time.sleep(4.75)
+        time.sleep(4.50)
 
         self.stop()
 
-def followPath(bot):
+def followPath(bot,direction):
     while True:
         detectedDistance = bot.distance.object_distance(MM)
         curHeading=bot.inertial.heading()
-        if curHeading<45:
-            bot.trackArr.append(["-","-"])#adds y dimension to array
-        elif curHeading>45:
-            for i in range(len(bot.trackArr)):
-                bot.trackArr[(len(bot.trackArr))-i].append("-")#adds x dimension to array
 
-        if (detectedDistance > 400 or detectedDistance < 150):#stops bot if object in way or edge
-            x, y = bot.coordX, bot.coordY
-            bot.trackArr[x][y] = "!"
-
+        if (detectedDistance < 240):#stops bot if object in way
+            
             bot.brain.screen.print("Obstacle detected, attempting to avoid.")
             bot.brain.screen.next_row()
 
-            if not avoidObstacle(bot):
-                bot.brain.screen.print("Unable to avoid obstacle.")
-                return
-            continue
-        
-        elif (curHeading >= 315 or curHeading < 45) and bot.trackArr[bot.coordX][bot.coordY+1]=="!":#tracks for already taken
             bot.stop()
             time.sleep(0.5)
-            bot.turnRight()
-        elif (curHeading >= 45 and curHeading < 135) and bot.trackArr[bot.coordX+1][bot.coordY]=="!":
-            bot.stop()
+            bot.moveBackward()
             time.sleep(0.5)
-            bot.turnRight()
-        elif (curHeading >= 135 and curHeading < 225) and bot.trackArr[bot.coordX][bot.coordY-1]=="!":
+            if direction==1:
+                avoidLeft(bot,detectedDistance)
+            elif direction==0:
+                avoidRight(bot,detectedDistance)
+
+        if (detectedDistance>350):#over edge
+            bot.brain.screen.print("Edge detected, attempting to avoid.")
+            bot.brain.screen.next_row()
+
             bot.stop()
-            time.sleep(0.5)
-            bot.turnRight()
-        elif (curHeading >= 225 or curHeading < 315) and bot.trackArr[bot.coordX-1][bot.coordY]=="!":
-            bot.stop()
-            time.sleep(0.5)
-            bot.turnRight()
+            if direction==0:
+                avoidEdgeRight(bot,detectedDistance)
+                direction=1
+            elif direction==1:
+                avoidEdgeLeft(bot,detectedDistance)
+                direction=0
+            time.sleep(0.2)
 
         else:
             bot.moveForward()
-            bot.trackArr[bot.coordX][bot.coordY]="!"
-
-            if curHeading >= 315 or curHeading < 45:#sets x&y for next movement
-                bot.coordY+=1
-            elif curHeading >= 45 and curHeading < 135:
-                bot.coordX+=1
-            elif curHeading >= 135 and curHeading < 225:
-                bot.coordY-=1
-            elif curHeading >= 225 and curHeading < 315:
-                bot.coordX-=1
         time.sleep(0.1)
 
-def avoidObstacle(bot):
-    # Move back from object
+def avoidEdgeLeft(bot,detectedDistance):
+    bot.turnLeft()
     bot.stop()
-    bot.moveBackward()
-    time.sleep(1)
-    bot.stop()
-    time.sleep(0.2)
-
-    # Try 4 directions, left, right, behind and original heading
-    for i in range(4):
+    if (detectedDistance>350 or detectedDistance < 240):
+        bot.moveForward()
+        time.sleep(2)
+        bot.stop()
+        bot.turnLeft()
+    else:
         bot.turnRight()
-        time.sleep(0.2)
-
-        curHeading = bot.inertial.heading()
-        x, y = bot.coordX, bot.coordY
-
-        if curHeading >= 315 or curHeading < 45:
-            newX, newY = x, y + 1
-        elif 45 <= curHeading < 135:
-            newX, newY = x + 1, y
-        elif 135 <= curHeading < 225:
-            newX, newY = x, y - 1
-        else: # 225 <= curHeading < 315
-            newX, newY = x - 1, y
-
-        # Check if an adjacent mapped area is save to move to
-        if bot.trackArr[newX][newY] != "!":
-            return True
-    
-    bot.brain.screen.print("All directions blocked.")
-    return False
         
+
+def avoidEdgeRight(bot,detectedDistance):
+    bot.turnRight()
+    bot.stop()
+    if (detectedDistance>350 or detectedDistance < 240):        
+        bot.moveForward()
+        time.sleep(2)
+        bot.stop()
+        bot.turnRight()
+
+    else:    
+        bot.turnLeft()
+
+        
+def avoidLeft(bot,detectedDistance):
+        #step1
+        bot.turnRight()
+        bot.stop()
+        bot.moveForward()#does not need to check for edge as alrady been at this point 
+        time.sleep(2)
+        bot.stop()
+
+        #step2
+        bot.turnLeft()
+        bot.stop()
+        if (detectedDistance>350):#revserse code
+            avoidLeftRev(bot)
+        else:
+            bot.moveForward()#need check here as can drive further than alrady covered track
+            time.sleep(5)
+            bot.stop()
+
+        #step3
+        bot.turnLeft()
+        bot.stop()
+        if (detectedDistance>350):
+            bot.turnRight()
+            bot.stop
+            bot.moveForward()
+            time.sleep(5)
+            bot.stop()
+            avoidLeftRev(bot)
+        else:
+            bot.moveForward()#need check here as unknown area
+            time.sleep(2)
+            bot.stop()
+            bot.turnRight()
+            bot.stop()
+
+def avoidLeftRev(bot):
+    bot.turnRight()
+    bot.stop()
+    bot.moveForward() 
+    time.sleep(2)
+    bot.stop()
+    bot.turnLeft()
+    bot.stop()
+    for i in range(2):
+        bot.turnLeft()
+        bot.stop()
+
+    
+
+def avoidRight(bot,detectedDistance):
+    #step1
+    bot.turnLeft()
+    bot.stop()
+    bot.moveForward()
+    time.sleep(2)
+    bot.stop()
+    
+    #step2
+    bot.turnRight()
+    bot.stop()
+    if (detectedDistance>350):
+        avoidRightRev(bot)
+    else:
+        bot.moveForward()
+        time.sleep(5)
+        bot.stop()
+
+        #step3
+        bot.turnRight()
+        bot.stop()
+        if (detectedDistance>350):
+            bot.turnLeft()
+            bot.stop
+            bot.moveForward()
+            time.sleep(5)
+            bot.stop()
+            avoidRightRev(bot)
+        else:
+            bot.moveForward()
+            time.sleep(2)
+            bot.stop()
+            bot.turnLeft()
+            bot.stop()
+
+def avoidRightRev(bot):
+    bot.turnRight()
+    bot.stop()
+    bot.moveForward() 
+    time.sleep(2)
+    bot.stop()
+    bot.turnLeft()
+    bot.stop()
+    for i in range(2):
+        bot.turnRight()
+        bot.stop()
+
 def main():
     bot = Bot()
-
+    direction=1
     while True:
-        followPath(bot)
+        followPath(bot,direction)
 
 main()
