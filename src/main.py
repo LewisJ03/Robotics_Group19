@@ -22,16 +22,16 @@ class Bot:
         self.motorFrontRight = Motor(Ports.PORT10)
         self.motorBackRight = Motor(Ports.PORT9)
     
-        self.baseSpeed = 30
-        self.turnSpeed = 5
+        self.baseSpeed = 50  # RPM
+        self.turnSpeed = 10  # RPM
 
         self.inertial.calibrate()
         self.optical.set_light(100)
 
-        x , y = 2, 2
+        x , y = 100, 100
         self.trackArr=[['-'for i in range(x)]for j in range(y)]#initalise array for tracking
-        self.coordX=0
-        self.coordY=0
+        self.coordX=1
+        self.coordY=1
 
     def moveForward(self):
         self.motorFrontLeft.spin(FORWARD, self.baseSpeed)
@@ -52,28 +52,22 @@ class Bot:
         self.motorBackRight.stop()
 
     def turnLeft(self):
-        targetHeading = (self.inertial.heading() - 90) % 360
-
         self.motorFrontLeft.spin(REVERSE, self.turnSpeed)
         self.motorBackLeft.spin(REVERSE, self.turnSpeed)
         self.motorFrontRight.spin(REVERSE, self.turnSpeed)
         self.motorBackRight.spin(REVERSE, self.turnSpeed)
 
-        while abs(self.inertial.heading() - targetHeading) > 5:
-            time.sleep(0.01)
+        time.sleep(4.75)
 
         self.stop()
             
     def turnRight(self):
-        targetHeading = (self.inertial.heading() + 90) % 360
-        
         self.motorFrontLeft.spin(FORWARD, self.turnSpeed)
         self.motorBackLeft.spin(FORWARD, self.turnSpeed)
         self.motorFrontRight.spin(FORWARD, self.turnSpeed)
         self.motorBackRight.spin(FORWARD, self.turnSpeed)
 
-        while abs(self.inertial.heading() - targetHeading) > 5:
-            time.sleep(0.01)
+        time.sleep(4.75)
 
         self.stop()
 
@@ -87,7 +81,7 @@ def followPath(bot):
             for i in range(len(bot.trackArr)):
                 bot.trackArr[(len(bot.trackArr))-i].append("-")#adds x dimension to array
 
-        if (detectedDistance > 280 or detectedDistance < 240):#stops bot if object in way or edge
+        if (detectedDistance > 400 or detectedDistance < 150):#stops bot if object in way or edge
             x, y = bot.coordX, bot.coordY
             bot.trackArr[x][y] = "!"
 
@@ -134,7 +128,7 @@ def avoidObstacle(bot):
     # Move back from object
     bot.stop()
     bot.moveBackward()
-    time.sleep(0.5)
+    time.sleep(1)
     bot.stop()
     time.sleep(0.2)
 
