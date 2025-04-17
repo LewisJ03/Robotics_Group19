@@ -66,9 +66,8 @@ class Bot:
         self.stop()
 
 def followPath(bot,direction):
-    while True:
+    while True:#main loop
         detectedDistance = bot.distance.object_distance(MM)
-        curHeading=bot.inertial.heading()
 
         if (detectedDistance < 240):#stops bot if object in way
             
@@ -79,17 +78,17 @@ def followPath(bot,direction):
             time.sleep(0.5)
             bot.moveBackward()
             time.sleep(0.5)
-            if direction==1:
+            if direction==1:#switch for left right turn
                 avoidLeft(bot,detectedDistance)
             elif direction==0:
                 avoidRight(bot,detectedDistance)
 
-        if (detectedDistance>350):#over edge
+        if (detectedDistance>350):#over edge stop
             bot.brain.screen.print("Edge detected, attempting to avoid.")
             bot.brain.screen.next_row()
 
             bot.stop()
-            if direction==0:
+            if direction==0:#switch for left right turn
                 avoidEdgeRight(bot,detectedDistance)
                 direction=1
             elif direction==1:
@@ -99,18 +98,18 @@ def followPath(bot,direction):
 
         else:
             bot.moveForward()
-        time.sleep(0.1)
+        time.sleep(0.1)#waits 0.1 seconds before looping
 
 def avoidEdgeLeft(bot,detectedDistance):
     bot.turnLeft()
     bot.stop()
-    if (detectedDistance>350 or detectedDistance < 240):
+    if (detectedDistance>350 or detectedDistance < 240):# distances allow for sensor to mess up distance and not crash program
         bot.moveForward()
-        time.sleep(2)
+        time.sleep(2)#length of robot
         bot.stop()
         bot.turnLeft()
     else:
-        bot.turnRight()
+        bot.turnRight()#code for abort move
         
 
 def avoidEdgeRight(bot,detectedDistance):
@@ -123,7 +122,7 @@ def avoidEdgeRight(bot,detectedDistance):
         bot.turnRight()
 
     else:    
-        bot.turnLeft()
+        bot.turnLeft()#code for abort move
 
         
 def avoidLeft(bot,detectedDistance):
@@ -151,7 +150,7 @@ def avoidLeft(bot,detectedDistance):
             bot.turnRight()
             bot.stop
             bot.moveForward()
-            time.sleep(5)
+            time.sleep(5)#time needed to pass object with current angle of eye
             bot.stop()
             avoidLeftRev(bot)
         else:
@@ -161,7 +160,7 @@ def avoidLeft(bot,detectedDistance):
             bot.turnRight()
             bot.stop()
 
-def avoidLeftRev(bot):
+def avoidLeftRev(bot):#code for if an avoid needs to be aborted
     bot.turnRight()
     bot.stop()
     bot.moveForward() 
@@ -175,7 +174,7 @@ def avoidLeftRev(bot):
 
     
 
-def avoidRight(bot,detectedDistance):
+def avoidRight(bot,detectedDistance):#avoid object on the right
     #step1
     bot.turnLeft()
     bot.stop()
@@ -210,7 +209,7 @@ def avoidRight(bot,detectedDistance):
             bot.turnLeft()
             bot.stop()
 
-def avoidRightRev(bot):
+def avoidRightRev(bot):#code for if an avoid needs to be aborted
     bot.turnRight()
     bot.stop()
     bot.moveForward() 
