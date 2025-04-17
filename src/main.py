@@ -12,6 +12,7 @@ import time
 
 class Bot:
     def __init__ (self):
+        # Initialise all physical components
         self.brain = Brain()
         self.inertial = Inertial()
         self.optical = Optical(Ports.PORT7)
@@ -21,11 +22,11 @@ class Bot:
         self.motorFrontRight = Motor(Ports.PORT10)
         self.motorBackRight = Motor(Ports.PORT9)
     
-        self.baseSpeed = 30
+        self.baseSpeed = 30 # Speeds in RPM
         self.turnSpeed = 10
 
         self.inertial.calibrate()
-        self.optical.set_light(100)
+        self.optical.set_light(100) # Turn LED on
 
     def moveForward(self):
         self.motorFrontLeft.spin(FORWARD, self.baseSpeed)
@@ -51,7 +52,7 @@ class Bot:
         self.motorFrontRight.spin(REVERSE, self.turnSpeed)
         self.motorBackRight.spin(REVERSE, self.turnSpeed)
 
-        time.sleep(4.50)
+        time.sleep(4.50) # ~90° turn - based on testing with turn speed of 10RPM
 
         self.stop()
             
