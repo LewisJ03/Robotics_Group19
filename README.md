@@ -11,9 +11,9 @@ The bot's aim is to move through an area and clear up any items within this area
 To achieve this it follows the below process:
 
 1. From it's start location, it will move forward until it encounters an obstacle or a distance > 350mm.
-2a. If the robot encounters a distance of more that 350mm, such as the edge of a table, it will turn and attempt to move forward again.
-2b. If the robot encounters an obstacle, an object within 240mm, it will turn to avoid the obstacle and attempt to find a way around it.
-3. The robot will continue to do this until it has completed it's area or cannot move due to obstacles blocking every path.
+2. If the robot encounters a distance of more that 350mm, such as the edge of a table, it will turn and attempt to move forward again.
+3. If the robot encounters an obstacle, an object within 240mm, it will turn to avoid the obstacle and attempt to find a way around it.
+4. The robot will continue to do this until it has completed it's area or cannot move due to obstacles blocking every path.
 
 While it is moving, it will be using the front scoop to pick up any items it comes across. In our demo, we used lego bricks.
 
